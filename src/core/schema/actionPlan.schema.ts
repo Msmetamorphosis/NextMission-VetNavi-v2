@@ -1,32 +1,25 @@
-// src/core/schema/actionPlan.schema.ts
+import { z } from "zod";
 
-export type ActionStatus =
-  | "pending"
-  | "in_progress"
-  | "blocked"
-  | "completed";
+export const ActionPlanStepSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  priority: z.number(),
+  category: z.enum(["planning", "resources", "execution"]),
+});
 
-export interface ActionStep {
-  id: string;
-  title: string;
-  description: string;
-  category: "career" | "education" | "health" | "benefits" | "personal";
-  priority: 1 | 2 | 3; // 1 = High, 2 = Medium, 3 = Low
-  status: ActionStatus;
-  estimatedHours?: number;
-  dependencies?: string[]; // ids of other steps
-}
+export const ActionPlanSchema = z.object({
+  goal: z.string(),
+  createdAt: z.string(),
+  steps: z.array(ActionPlanStepSchema),
+  status: z.enum(["draft", "final"]),
+});
 
-export interface ActionPlanMetadata {
-  createdAt: string;
-  version: string;
-  generatedBy: "engine_v2";
-}
-
-export interface ActionPlan {
-  userId: string;
-  goal: string;
-  summary: string;
-  steps: ActionStep[];
-  metadata: ActionPlanMetadata;
-}
+export type ActionPlan = z.infer<typeof ActionPlanSchema>;
+export const ActionPlanInputSchema = z.object({
+    userId: z.string().optional(),
+    goal: z.string().min(5, "Goal must be at least 5 characters long"),
+  });
+  
+  export type ActionPlanInput = z.infer<typeof ActionPlanInputSchema>;
+  

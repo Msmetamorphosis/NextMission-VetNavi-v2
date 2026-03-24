@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Send, Loader2, CheckCircle, MapPin, Clock, User, MessageCircle, ExternalLink } from 'lucide-react';
-import { generateActionPlan } from '@/lib/api-client';
+
 
 export default function ActionPlanGenerator() {
   const [goal, setGoal] = useState('');
@@ -54,8 +54,36 @@ export default function ActionPlanGenerator() {
     setIsGenerating(true);
     
     try {
-      const plan = await generateActionPlan(goal, userContext);
-      setActionPlan(plan);
+        const res = await fetch('/api/generate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              userId: 'demo-user',
+              goal,
+              context: {
+                careerStage: userContext.yearsOfService || 'unknown',
+                healthStatus: 'unknown',
+                benefitsStatus: '',
+                educationLevel: ''
+              }
+            })
+          });
+          
+          const data = await res.json();
+          
+          const plan = {
+            categories: [
+              {
+                name: 'Your Action Plan',
+                steps: data.steps || []
+              }
+            ],
+            follow_up: 'Want to refine this further?'
+          };
+          
+          setActionPlan(plan);
     } catch (error) {
       console.error('Error generating action plan:', error);
       // Show error message to user

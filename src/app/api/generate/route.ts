@@ -1,3 +1,4 @@
+console.log("API HIT");
 // src/app/api/action-plan/route.ts
 
 import { NextRequest, NextResponse } from "next/server";

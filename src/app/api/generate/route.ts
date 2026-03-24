@@ -1,5 +1,4 @@
-console.log("API HIT");
-// src/app/api/action-plan/route.ts
+// src/app/api/generate/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { ActionPlanSchema, ActionPlanInputSchema } from "@/core/schema/actionPlan.schema";

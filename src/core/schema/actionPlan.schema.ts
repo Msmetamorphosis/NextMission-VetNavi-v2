@@ -6,13 +6,21 @@ export const ActionPlanStepSchema = z.object({
   description: z.string(),
   priority: z.number(),
   category: z.enum(["planning", "resources", "execution"]),
+  resources: z
+    .array(
+      z.object({
+        name: z.string(),
+        url: z.string(),
+      })
+    )
+    .optional(),
 });
 
 export const ActionPlanSchema = z.object({
   goal: z.string(),
   createdAt: z.string(),
   steps: z.array(ActionPlanStepSchema),
-  status: z.enum(["draft", "final"]),
+  status: z.enum(["draft", "final"]).optional(),
 });
 
 export type ActionPlan = z.infer<typeof ActionPlanSchema>;

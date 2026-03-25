@@ -1,19 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Send, Loader2, CheckCircle, MapPin, Clock, User, MessageCircle, ExternalLink } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 
 export default function ActionPlanGenerator() {
   const [goal, setGoal] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [actionPlan, setActionPlan] = useState(null);
   const [followUp, setFollowUp] = useState('');
-  const [userContext, setUserContext] = useState({
-    militaryBranch: '',
-    yearsOfService: '',
-    currentLocation: '',
-    targetIndustry: ''
-  });
 
   const parseMarkdownLink = (text) => {
     if (!text) return null;
@@ -42,24 +36,13 @@ export default function ActionPlanGenerator() {
     setIsGenerating(true);
 
     try {
-      const res = await fetch('/api/generate', {
+      const res = await fetch('/api/action-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: 'demo-user',
-          goal,
-          context: {
-            careerStage: userContext.yearsOfService || 'unknown',
-            healthStatus: 'unknown',
-            benefitsStatus: '',
-            educationLevel: ''
-          }
-        })
+        body: JSON.stringify({ goal })
       });
 
-      if (!res.ok) {
-        throw new Error(`API error: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
 
       const data = await res.json();
 
@@ -104,24 +87,15 @@ export default function ActionPlanGenerator() {
     setIsGenerating(true);
 
     try {
-      const res = await fetch('/api/generate', {
+      const res = await fetch('/api/action-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: 'demo-user',
-          goal: `${goal} - Additional context: ${followUp}`,
-          context: {
-            careerStage: userContext.yearsOfService || 'unknown',
-            healthStatus: 'unknown',
-            benefitsStatus: '',
-            educationLevel: ''
-          }
+          goal: `${goal} - ${followUp}`
         })
       });
 
-      if (!res.ok) {
-        throw new Error(`API error: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
 
       const data = await res.json();
 
@@ -143,14 +117,6 @@ export default function ActionPlanGenerator() {
       setIsGenerating(false);
     }
   };
-
-  const goalExamples = [
-    "I want to buy a house using my VA loan benefits in Texas",
-    "Help me file for PTSD disability compensation",
-    "I need to transition from military IT to civilian cybersecurity",
-    "I want to use my GI Bill for a computer science degree",
-    "I need help accessing VA mental health services for anxiety"
-  ];
 
   return (
     <section className="py-20 bg-slate-950 text-white">
@@ -190,7 +156,29 @@ export default function ActionPlanGenerator() {
                   return (
                     <div key={j} className="mb-4 p-4 bg-white/10 rounded-lg">
                       <h4 className="font-bold">{step.title}</h4>
+
                       <p>{step.description}</p>
+
+                      {/* 🔥 RESOURCES RENDERED HERE */}
+                      {step.resources && step.resources.length > 0 && (
+                        <div className="mt-3 space-y-1">
+                          <p className="text-sm text-white/70 font-semibold">
+                            Recommended Resources:
+                          </p>
+
+                          {step.resources.map((res, i) => (
+                            <a
+                              key={i}
+                              href={res.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block text-sm text-blue-400 hover:underline"
+                            >
+                              🔗 {res.name}
+                            </a>
+                          ))}
+                        </div>
+                      )}
 
                       {link && (
                         <a href={link.url} target="_blank" className="text-blue-400">

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import type { ActionPlan } from "@/core/schema/actionPlan.schema";
 
 export default function Home() {
   const [goal, setGoal] = useState("");
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<ActionPlan | null>(null);
   const [loading, setLoading] = useState(false);
 
   const generatePlan = async () => {
@@ -18,8 +19,8 @@ export default function Home() {
       body: JSON.stringify({ goal }),
     });
 
-    const data = await res.json();
-    setResult(data);
+    const data = (await res.json()) as ActionPlan | { error?: string };
+    setResult("steps" in data && Array.isArray(data.steps) ? data : null);
     setLoading(false);
   };
 
@@ -63,7 +64,7 @@ export default function Home() {
       Your Personalized Action Plan
     </h2>
 
-    {result.steps?.map((step: any, index: number) => (
+    {result.steps?.map((step, index) => (
       <div
         key={step.id}
         className="border rounded-lg p-6 bg-white shadow-sm"

@@ -1,7 +1,7 @@
 // src/app/api/generate/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { ActionPlanSchema, ActionPlanInputSchema } from "@/core/schema/actionPlan.schema";
+import { ActionPlanInputSchema } from "@/core/schema/actionPlan.schema";
 import { LocalActionPlanEngine } from "@/core/engine/localActionPlan.engine";
 
 export async function POST(req: NextRequest) {
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
 
     return NextResponse.json(plan);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Invalid request or generation failed" },
       { status: 400 }

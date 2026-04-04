@@ -1,35 +1,64 @@
 'use client';
 
-import { baseResourceCategories as resourceCategories } from '@/data/resources/baseResources';
+import {
+  baseResourceCategories as resourceCategories,
+  type ResourceCategoryKey,
+} from '@/data/resources/baseResources';
 
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
-import Chatbot from '@/components/Chatbot';
-import ElevenLabsWidget from '@/components/ElevenLabsWidget';
-import { GraduationCap, Briefcase, Home, Heart, DollarSign, Users, ChevronDown, ChevronRight, ExternalLink, Phone, AlertTriangle, MessageSquare } from 'lucide-react';
+import Navigation from '@/components/ui/Navigation';
+import Footer from '@/components/ui/Footer';
+import Chatbot from '@/components/ui/Chatbot';
+import ElevenLabsWidget from '@/components/ui/ElevenLabsWidget';
+import {
+  GraduationCap,
+  Briefcase,
+  Home,
+  Heart,
+  DollarSign,
+  Users,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+  Phone,
+  AlertTriangle,
+  MessageSquare,
+  type LucideIcon,
+} from 'lucide-react';
 import { useState } from 'react';
 
-export default function Resources() {
-  const [openCategories, setOpenCategories] = useState({
-    career: false,
-    education: false,
-    housing: false,
-    healthcare: false,
-    finance: false,
-    community: false
-  });
+const CATEGORY_ICONS: Record<ResourceCategoryKey, LucideIcon> = {
+  career: Briefcase,
+  education: GraduationCap,
+  housing: Home,
+  healthcare: Heart,
+  finance: DollarSign,
+  community: Users,
+};
 
-  const toggleCategory = (category) => {
-    setOpenCategories(prev => ({
+const initialOpenState: Record<ResourceCategoryKey, boolean> = {
+  career: false,
+  education: false,
+  housing: false,
+  healthcare: false,
+  finance: false,
+  community: false,
+};
+
+export default function Resources() {
+  const [openCategories, setOpenCategories] =
+    useState<Record<ResourceCategoryKey, boolean>>(initialOpenState);
+
+  const toggleCategory = (category: ResourceCategoryKey) => {
+    setOpenCategories((prev) => ({
       ...prev,
-      [category]: !prev[category]
+      [category]: !prev[category],
     }));
   };
 
   return (
     <div className="min-h-screen bg-[var(--sandstone-beige)]">
       <Navigation />
-      
+
       {/* Hero Section */}
       <section className="py-20 bg-[var(--sandstone-beige)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -37,7 +66,7 @@ export default function Resources() {
             Veteran Resources Directory
           </h1>
           <p className="text-xl leading-relaxed" style={{ color: 'var(--deep-army-green)' }}>
-            Comprehensive collection of trusted resources from government agencies, 
+            Comprehensive collection of trusted resources from government agencies,
             veteran organizations, and military partners to support your transition and ongoing success.
           </p>
         </div>
@@ -53,15 +82,21 @@ export default function Resources() {
               <div className="flex flex-wrap justify-center items-center gap-8 text-base">
                 <div className="flex items-center">
                   <Phone className="h-5 w-5 mr-2" />
-                  <span><strong>Veterans Crisis Line:</strong> 1-800-273-8255</span>
+                  <span>
+                    <strong>Veterans Crisis Line:</strong> 1-800-273-8255
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <MessageSquare className="h-5 w-5 mr-2" />
-                  <span><strong>Text:</strong> 838255</span>
+                  <span>
+                    <strong>Text:</strong> 838255
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <Phone className="h-5 w-5 mr-2" />
-                  <span><strong>Suicide Prevention:</strong> 988</span>
+                  <span>
+                    <strong>Suicide Prevention:</strong> 988
+                  </span>
                 </div>
               </div>
             </div>
@@ -73,71 +108,77 @@ export default function Resources() {
       <section className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-6">
-            {Object.entries(resourceCategories).map(([key, category]) => (
-              <div key={key} className="border-2 border-[var(--desert-khaki)] rounded-xl overflow-hidden shadow-lg">
-                <button
-                  onClick={() => toggleCategory(key)}
-                  className={`w-full p-6 ${category.bgColor} hover:opacity-90 transition-all duration-200 flex items-center justify-between`}
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
-                      <category.icon className="h-7 w-7 text-white" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className={`text-2xl font-bold ${category.textColor}`}>
-                        {category.title}
-                      </h3>
-                      <p className="text-white/90 text-lg">
-                        {category.description}
-                      </p>
-                    </div>
-                  </div>
-                  {openCategories[key] ? (
-                    <ChevronDown className={`h-6 w-6 ${category.textColor}`} />
-                  ) : (
-                    <ChevronRight className={`h-6 w-6 ${category.textColor}`} />
-                  )}
-                </button>
-
-                {openCategories[key] && (
-                  <div className="p-6 bg-white border-t-2 border-[var(--desert-khaki)]">
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {category.resources.map((resource, index) => (
-                        <div key={index} className="border-2 border-[var(--pale-olive)] rounded-lg p-5 hover:shadow-md hover:border-[var(--coyote-tan)] transition-all duration-200 bg-[var(--pale-olive)]">
-                          <div className="flex items-start justify-between mb-3">
-                            <h4 className="font-bold text-lg" style={{ color: 'var(--dark-brown)' }}>
-                              {resource.name}
-                            </h4>
-                            <span className={`text-xs px-3 py-1 rounded-full font-semibold ${
-                              resource.type === 'Government' 
-                                ? 'bg-[var(--military-green)] text-white'
-                                : resource.type === 'Organization'
-                                ? 'bg-[var(--dark-brown)] text-white'
-                                : 'bg-[var(--coyote-tan)] text-white'
-                            }`}>
-                              {resource.type}
-                            </span>
-                          </div>
-                          <p className="mb-4 text-sm leading-relaxed" style={{ color: 'var(--deep-army-green)' }}>
-                            {resource.description}
-                          </p>
-                          <a
-                            href={resource.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center font-semibold hover:underline transition-colors duration-200"
-                            style={{ color: 'var(--military-green)' }}
-                          >
-                            Visit Resource
-                            <ExternalLink className="ml-1 h-4 w-4" />
-                          </a>
+            {(Object.keys(resourceCategories) as ResourceCategoryKey[]).map((key) => {
+                const category = resourceCategories[key];
+                const Icon = CATEGORY_ICONS[key];
+                return (
+                  <div key={key} className="border-2 border-[var(--desert-khaki)] rounded-xl overflow-hidden shadow-lg">
+                    <button
+                      type="button"
+                      onClick={() => toggleCategory(key)}
+                      className={`w-full p-6 ${category.bgColor} hover:opacity-90 transition-all duration-200 flex items-center justify-between`}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
+                          <Icon className="h-7 w-7 text-white" />
                         </div>
-                      ))}
-                    </div>
+                        <div className="text-left">
+                          <h3 className={`text-2xl font-bold ${category.textColor}`}>{category.title}</h3>
+                          <p className="text-white/90 text-lg">{category.description}</p>
+                        </div>
+                      </div>
+                      {openCategories[key] ? (
+                        <ChevronDown className={`h-6 w-6 ${category.textColor}`} />
+                      ) : (
+                        <ChevronRight className={`h-6 w-6 ${category.textColor}`} />
+                      )}
+                    </button>
+
+                    {openCategories[key] && (
+                      <div className="p-6 bg-white border-t-2 border-[var(--desert-khaki)]">
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {category.resources.map((resource, index) => (
+                            <div
+                              key={index}
+                              className="border-2 border-[var(--pale-olive)] rounded-lg p-5 hover:shadow-md hover:border-[var(--coyote-tan)] transition-all duration-200 bg-[var(--pale-olive)]"
+                            >
+                              <div className="flex items-start justify-between mb-3">
+                                <h4 className="font-bold text-lg" style={{ color: 'var(--dark-brown)' }}>
+                                  {resource.name}
+                                </h4>
+                                <span
+                                  className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                                    resource.type === 'Government'
+                                      ? 'bg-[var(--military-green)] text-white'
+                                      : resource.type === 'Organization'
+                                        ? 'bg-[var(--dark-brown)] text-white'
+                                        : 'bg-[var(--coyote-tan)] text-white'
+                                  }`}
+                                >
+                                  {resource.type}
+                                </span>
+                              </div>
+                              <p className="mb-4 text-sm leading-relaxed" style={{ color: 'var(--deep-army-green)' }}>
+                                {resource.description}
+                              </p>
+                              <a
+                                href={resource.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center font-semibold hover:underline transition-colors duration-200"
+                                style={{ color: 'var(--military-green)' }}
+                              >
+                                Visit Resource
+                                <ExternalLink className="ml-1 h-4 w-4" />
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+                );
+              })}
           </div>
         </div>
       </section>

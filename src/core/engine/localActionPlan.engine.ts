@@ -1,15 +1,21 @@
 import OpenAI from "openai";
 import { ActionPlan, ActionPlanSchema } from "../schema/actionPlan.schema";
 import { ActionPlanEngine, ActionPlanInput } from "./actionPlan.engine";
-import { baseResourceCategories } from "@/data/resources/baseResources";
+import {
+  baseResourceCategories,
+  type BaseResource,
+  type ResourceCategory,
+} from "@/data/resources/baseResources";
+
+type ScoredResource = BaseResource & { score: number };
 
 function findRelevantResources(goal: string) {
   const words = goal.toLowerCase().split(/\s+/);
 
-  const scored: any[] = [];
+  const scored: ScoredResource[] = [];
 
-  Object.values(baseResourceCategories).forEach((category: any) => {
-    category.resources.forEach((resource: any) => {
+  Object.values(baseResourceCategories).forEach((category: ResourceCategory) => {
+    category.resources.forEach((resource: BaseResource) => {
       let score = 0;
 
       resource.tags.forEach((tag: string) => {
@@ -64,46 +70,53 @@ export class LocalActionPlanEngine implements ActionPlanEngine {
       throw new Error("Empty response from OpenAI");
     }
 
-    const raw = JSON.parse(content);
+    const raw = JSON.parse(content) as unknown;
 
-// 🧠 Normalize LLM output into my schema
-const normalized = {
-  goal: input.goal,
-  createdAt: new Date().toISOString(),
-  status: "draft",
-  steps: (raw.actionPlan || []).map((item: any, index: number) => ({
-    id: String(index + 1),
-    title: item.title,
-    description: item.description,
-    priority:
-      item.priority === "High"
-        ? 1
-        : item.priority === "Medium"
-        ? 2
-        : 3,
-    category: "planning", // temp default
-  })),
-};
+    type LlmStep = {
+      title?: string;
+      description?: string;
+      priority?: string;
+    };
 
-  const validation = ActionPlanSchema.safeParse(normalized);
+    const llmPayload = raw as { actionPlan?: LlmStep[] };
+    const llmSteps = Array.isArray(llmPayload.actionPlan)
+      ? llmPayload.actionPlan
+      : [];
+
+    const normalized = {
+      goal: input.goal,
+      createdAt: new Date().toISOString(),
+      status: "draft" as const,
+      steps: llmSteps.map((item, index) => ({
+        id: String(index + 1),
+        title: item.title ?? "",
+        description: item.description ?? "",
+        priority:
+          item.priority === "High" ? 1 : item.priority === "Medium" ? 2 : 3,
+        category: "planning" as const,
+      })),
+    };
+
+    const validation = ActionPlanSchema.safeParse(normalized);
 
     if (!validation.success) {
       console.log("❌ VALIDATION ERROR:", validation.error.format());
-      console.log("❌ RAW LLM OUTPUT:", parsed);
+      console.log("❌ RAW LLM OUTPUT:", raw);
       throw new Error("LLM output did not match ActionPlan schema");
     }
 
-    if (!validation.success) {
-      throw new Error("Invalid schema from LLM");
-    }
-
-    // 🔥 Inject resources here
     const enriched = {
       ...validation.data,
       steps: validation.data.steps.map((step, index) => ({
         ...step,
-        resources: index === 0 ? findRelevantResources(input.goal) : []
-      }))
+        resources:
+          index === 0
+            ? findRelevantResources(input.goal).map(({ name, url }) => ({
+                name,
+                url,
+              }))
+            : [],
+      })),
     };
 
     return enriched;
